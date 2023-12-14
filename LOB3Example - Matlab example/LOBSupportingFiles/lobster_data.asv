@@ -1,0 +1,27 @@
+function [MOBid, bid_volume, MOAsk, ask_volume,Time] = lobster_data(data1, data2)
+%this function incorperates lobster data and transforms it into a format
+%that I can use in this analysis. 
+    Time=data1(:,1);
+% Initialize variables
+    num_cols = data2//4
+    num_rows = data2.shape[0]
+    MOBid = zeros(size(data2));
+    bid_volume = zeros(size(data2));
+    MOAsk = zeros(size(data2));
+    ask_volume = zeros(size(data2));
+
+    for i = 1:size(data2, 2)
+        % Extract data based on column index
+        col_index = floor((i - 1) / 4) + 1;
+        if rem(i, 4) == 1
+            MOBid(:, col_index) = data2(:, i);
+        elseif rem(i, 4) == 2
+            bid_volume(:, col_index) = data2(:, i);
+        elseif rem(i, 4) == 3
+            MOAsk(:, col_index) = data2(:, i);
+        elseif rem(i, 4) == 0
+            ask_volume(:, col_index) = data2(:, i);
+        end
+    end
+end
+

@@ -1,5 +1,5 @@
 %main
-%close all; clear all
+close all; clear all
 %Hyper parameters 
     %lambda= 1; % lambda — The weighting parameter used to compute the imbalance index I
     % nThe initial number of bins used to partition smoothed I for discretization

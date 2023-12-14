@@ -1,6 +1,8 @@
 import requests
 import numpy as np
 from scipy.linalg import expm
+from skopt import BayesSearchCV
+from skopt.space import Integer
 
 def get_LOB(resp):
     # Check if the request was successful (status code 200)
@@ -35,8 +37,7 @@ def imbalance_ratio(Vbid_volume,Vask_volume):
     Vask = sum(weight * Vask_volume)
     
     I = (Vbid - Vask) / (Vbid + Vask)
-    
-    return I
+    return  I
 
 def midprice(MOBid, MOAsk):
     # Returns midprice for given bid and ask price
@@ -172,31 +173,40 @@ def trade_on_Q(Data, Q, n, N):
             cash -= MOAsk[tt]  # Buy
             assets += 1
 
+def optimize_trading(TData, VData):
+    # Optimization variables
+    space = {'numBins': Integer(3, 13), 'numTicks': Integer(10, 60)}
+
+    # Objective function handle
+    def objective_function(x):
+        return negative_cash(x, TData, VData)
+
+    # Optimize
+    results = BayesSearchCV(objective_function, space, n_iter=75, n_jobs=-1, random_state=42, verbose=0)
+
+    return results
+
+# Objective (local)
+def negative_cash(x, TData, VData):
+    # grab values from numBins and numTicks
+    n = x['numBins']
+    N = x['numTicks']
+
+    # Make trading matrix Q
+    Q = make_Q(TData, n, N)
+
+    # Trade on Q
+    cash = trade_on_Q(VData, Q, n, N)
+
+    # Objective value
+    loss = -cash
+
+    return loss
 
 if __name__ == "__main__":
     resp = requests.get('https://api.kraken.com/0/public/Depth?pair=XBTUSD')
 
     ask_prices, ask_volumes, ask_timestamps, bid_prices, bid_volumes, bid_timestamps = get_LOB(resp)
 
-    #print(ask_prices)
+    print(ask_prices)
     
-    # Example usage:
-    Vbid_volume = np.array([1, 2, 3, 4, 5])
-    Vask_volume = np.array([5, 4, 3, 2, 1])
-
-    result = imbalance_ratio(Vbid_volume, Vask_volume)
-    print("results",result)
-
-    # Example usage:
-    MOBid = np.array([100, 105, 98, 102])
-    MOAsk = np.array([102, 108, 100, 105])
-
-    result = midprice(MOBid, MOAsk)
-    print("midprice",result)
-
-    # Example usage:
-    data = np.array([1., 2., 3., 4., 5., 6., 7., 8., 9., 10.])
-    window = 3
-
-    result = smoothed_time_weighted_average(data, window)
-    print("time smoothed",result)
