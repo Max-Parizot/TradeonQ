@@ -1,7 +1,6 @@
 function twa = smoothed_time_weighted_average(data,  window)
 %this function assumes that the data is evenly distributed with time. the
 %user will specify a certain amount of ticks for the function
-
 % data - dependent variable for weighted average
 % time - time vector
 % window - N - length of window for tick
@@ -9,7 +8,6 @@ function twa = smoothed_time_weighted_average(data,  window)
 % Define exponential weights
 x = 1:window;
 weights = exp(-0.5 .* x);
-
 % Initialize smoothed_data variable
 smoothed_data = NaN(size(data));
 smoothed_data(1:window) = data(1:window);

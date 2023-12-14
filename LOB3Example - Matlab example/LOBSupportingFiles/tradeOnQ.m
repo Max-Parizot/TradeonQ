@@ -1,7 +1,6 @@
 function cash = tradeOnQ(Data, Q, n, N)
 % This function performs trading based on a given Q matrix and input Data.
 % It uses the Q matrix to make predictions and execute buy or sell actions accordingly.
-
 % Extract relevant data from the input structure 'Data'
 t = Data.t;       % Time vector
 MOBid = Data.MOBid; % Market order bid prices
@@ -37,7 +36,7 @@ for tt = 2:T-N
     end
 end
 
-% End of trading: liquidate position
+%End of trading: liquidate position - need this to trade
 if assets > 0
     cash = cash + assets * MOBid(T); % Sell off remaining assets
 elseif assets < 0

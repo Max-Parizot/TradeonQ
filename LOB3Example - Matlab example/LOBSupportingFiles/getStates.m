@@ -1,4 +1,5 @@
 function [rho, DS] = getStates(Data, n, N)
+%page 24 in the report
 % [rho, DS] = getStates(Data, n, N) calculates states based on input data.
 % This function takes time series data, performs smoothing on imbalance, 
 % and computes price changes to derive states.
@@ -20,6 +21,5 @@ rho = discretize(sI, binEdges); % Discretize smoothed imbalance into bins
 
 % Price changes
 DS = NaN(size(S)); % Initialize array for price changes
-shiftS = S(dS + 1:end); % Shifted price vector for calculating changes
-DS(1:end - dS) = sign(shiftS - S(1:end - dS)); % Compute price changes
+DS(1:end - dS) = sign( S(dS + 1:end) - S(1:end - dS)); % Compute price changes To make rolling need to adjust to page 24
 end

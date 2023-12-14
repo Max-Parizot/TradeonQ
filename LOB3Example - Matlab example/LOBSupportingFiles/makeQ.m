@@ -1,5 +1,8 @@
 function Q = makeQ(Data,n,N)
 % This function generates a transition matrix Q based on input data.
+%this is done by backtesting data to generate Q. Once Q is made it can be
+%used for future returns.
+%makes Q using training data
 % Extract relevant parameters from the input structure 'Data'
 numBins = n;      % Number of bins for discretization
 numStates = 3 * n; % Total number of states
@@ -7,7 +10,7 @@ dI = N;           % Imbalance smoothing window size
 dS = N;           % Price change window size
 
 % Markov states
-[rho, DS] = getStates(Data,n, N);
+[rho, DS] = getStates(Data,n, N); 
 
 % Map states to a composite state space 'phi'
 phi = NaN(size(rho));
