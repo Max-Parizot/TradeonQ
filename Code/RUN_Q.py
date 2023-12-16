@@ -43,7 +43,7 @@ def midprice(MOBid, MOAsk):
     # Returns midprice for given bid and ask price
     # This function can handle vectors
     
-    S = (MOBid - MOAsk) / 2 + MOAsk
+    S = (MOBid + MOAsk) / 2
     
     return S
 
@@ -71,24 +71,21 @@ def smoothed_time_weighted_average(data, window):
 
 def get_states(Data, n, N):
     # Extracting data from the input structure
-    t = Data['t']  # Time vector
-    I = Data['I']  # Imbalance vector
-    S = Data['S']  # Price vector
+    # Imbalance vector
+    # Price vector
 
     # Hyperparameters
     dI = N  # Window size for smoothing imbalance
     dS = N  # Window size for calculating price changes
-    numBins = n  # Number of bins for discretization
+    n  # Number of bins for discretization
 
     # Smoothed imbalance bins
-    sI = smoothed_time_weighted_average(I, dI)
-    binEdges = np.linspace(-1., 1., numBins + 1.)
-    rho = np.digitize(sI, binEdges) - 1  # Discretize smoothed imbalance into bins. -1 to start index at 0
-
+    sI = smoothed_time_weighted_average(Data['I'], dI)
+    binEdges = np.linspace(-1., 1., num=int(n))
+    rho = np.digitize(sI, binEdges, right=False)   # Discretize smoothed imbalance ratio into bins
+    rho = rho[:-dS]
     # Price changes
-    DS = np.full_like(S, np.nan)
-    DS[:-dS] = np.sign(S[dS:] - S[:-dS])  # Compute price changes
-
+    DS = np.sign(np.diff(Data['S'], n=dS))
     return rho, DS
 
 def make_Q(Data, n, N):
@@ -100,16 +97,9 @@ def make_Q(Data, n, N):
 
     # Markov states
     rho, DS = get_states(Data, n, N)
-
+    
     # Map states to a composite state space 'phi'
-    phi = np.zeros_like(rho)
-    for i in range(len(rho)):
-        if DS[i] == -1:
-            phi[i] = rho[i]
-        elif DS[i] == 0:
-            phi[i] = rho[i] + numBins
-        elif DS[i] == 1:
-            phi[i] = rho[i] + 2 * numBins
+    phi = np.where(DS == -1, rho, np.where(DS == 0, rho + n, rho + 2 * n))
 
     # Transition counts
     C = np.zeros((numStates, numStates))
@@ -118,7 +108,7 @@ def make_Q(Data, n, N):
 
     # Holding times, generator matrix
     H = np.diag(C)
-    G = C / H[:, None]
+    G = C / H
     v = np.sum(G, axis=1)
     G = G + np.diag(-v)
 
@@ -127,17 +117,17 @@ def make_Q(Data, n, N):
 
     # Bayes condition
     PCond = np.zeros_like(P)
-    phiNums = np.arange(1, numStates + 1)
+    phiNums = np.arange(1, numStates+1)
     modNums = phiNums % numBins
-    for i in phiNums - 1:
-        for j in phiNums - 1:
-            idx = (modNums == modNums[j])
-            PCond[i, j] = np.sum(P[i, idx])
+    for i in phiNums:
+        for j in phiNums:
+            idx = (modNums == modNums[j-1])
+            PCond[i-1, j-1] = np.sum(P[i-1, idx])
 
     # Trading matrix
     Q = P / PCond
 
-    return Q
+    return Q, PCond, P, G, v, C, phi
 
 def trade_on_Q(Data, Q, n, N):
     # Extract relevant data from the input structure 'Data'

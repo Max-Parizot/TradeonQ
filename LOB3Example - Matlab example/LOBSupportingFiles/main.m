@@ -28,6 +28,7 @@ I=NaN(size(bid_volume,1),1); %initialize variable
 for time = 1:size(bid_volume,1)
     I(time,1) = imbalance_ratio(bid_volume(time,:),ask_volume(time,:));    %I - imbalance index
 end
+
 MOBid=MoBid(:,1);
 MOAsk=MoAsk(:,1);
 Data = timetable(t,S,I,MOBid,MOAsk); 
@@ -41,11 +42,13 @@ VData = Data(bp+1:end,:);   % Validation data
 
 %Machine learning portion
 results = optimizeTrading(TData,VData);
-[BEST,negcash]= bestPoint(results)
+[BEST,negcash]= bestPoint(results);
 n=BEST.numBins;
 N=BEST.numTicks;
-dollars= -negcash / 100
+dollars= -negcash / 100;
 % Compare Qs
+n=5
+N=20
 QT = makeQ(TData,n,N);    
 QV = makeQ(VData,n,N);
 QTVDiff = QT - QV
