@@ -41,15 +41,97 @@ VData = Data(bp+1:end,:);   % Validation data
 
 
 %Machine learning portion
-results = optimizeTrading(TData,VData);
-[BEST,negcash]= bestPoint(results);
-n=BEST.numBins;
-N=BEST.numTicks;
-dollars= -negcash / 100;
-% Compare Qs
-n=5
-N=20
-QT = makeQ(TData,n,N);    
-QV = makeQ(VData,n,N);
-QTVDiff = QT - QV
-Inhomogeneity = (QT > 0.5 & QV < 0.5 ) | (QT < 0.5 & QV > 0.5 ) %identify trading inefficiencies in the Algorithm. 
+n=5;
+N=20;
+Q=makeQ(TData,n,N);
+Cash=309900 * 20;
+prob_limit=.0;
+[cash2, CASH, ASSETS,POSITIONS]=trade_on_Q_with_cash_limit (Data,Q,n,N,Cash,prob_limit);
+percent_increase = (cash2-Cash)/Cash*100
+increase = (cash2-Cash)/100
+
+% Your existing plotting code for CASH and ASSETS
+figure(1)
+subplot(4,1,1)
+plot(Data.t, CASH)
+xlabel('Time')
+ylabel('Cash')
+title('Cash over time')
+% Add an orange dotted line for the last cash data point
+hold on;
+lastCashPoint = ones(1,length(CASH)) *cash2;
+plot(Data.t, lastCashPoint, 'r--', 'LineWidth', .2);
+hold off;
+
+subplot(4,1,2)
+plot(Data.t, ASSETS)
+xlabel('Time')
+ylabel('Assets')
+title('Assets over time')
+
+% Third subplot: Difference in cash price over time
+subplot(4,1,3)
+positions_difference=POSITIONS-Cash;
+zero=zeros(1,length(POSITIONS));
+plot(Data.t, positions_difference,Data.t,zero,'r--','LineWidth',.2)
+xlabel('Time')
+ylabel('Cash Difference')
+title('Positions')
+ylim([-550000, 60000])
+
+subplot(4,1,4)
+plot(Data.t,Data.S)
+xlabel('Time')
+ylabel('Stock Price in cents')
+
+
+[cash, CASH, ASSETS,POSITIONS] = tradeOnQ(Data, Q, n, N);
+figure(2)
+% Your existing plotting code for CASH and ASSETS
+subplot(4,1,1)
+plot(Data.t, CASH)
+xlabel('Time')
+ylabel('Cash')
+title('Cash over time')
+
+% Add an orange dotted line for the last cash data point
+hold on;
+lastCashPoint = ones(1,length(CASH)) *cash2;
+plot(Data.t, lastCashPoint, 'r--', 'LineWidth', .2);
+hold off;
+
+subplot(4,1,2)
+plot(Data.t, ASSETS)
+xlabel('Time')
+ylabel('Assets')
+title('Assets over time')
+
+% Third subplot: Difference in cash price over time
+subplot(4,1,3)
+
+plot(Data.t, Data.I ,Data.t,zero,'r--','LineWidth',.2)
+xlabel('Time')
+ylabel('Imbalance ratio')
+title('Imbalance ratio')
+
+subplot(4,1,4)
+plot(Data.t,Data.S)
+xlabel('Time')
+ylabel('Stock Price in cents')
+
+
+%cash=tradeOnQ(VData, Q, n, N)
+% 
+% results = optimizeTrading(TData,VData);
+% [BEST,negcash]= bestPoint(results);
+% n=BEST.numBins;
+% N=BEST.numTicks;
+% dollars= -negcash / 100;
+% cash= 309900 * 100;
+% percent_increase = (-negcash-cash)/cash * 100
+% increase_in_dollars = (-negcash-cash) / 100
+% [QT,P, Pcond, G, v, H, C,phi] = makeQ(TData,n,N); 
+% [rho, DS] = getStates(TData, n, N);
+% [QV,PQV, PcondQV, GQV, vQV, HQV, CQV,phiQV] = makeQ(VData,n,N);
+% QTVDiff = QT - QV;
+% Inhomogeneity = (QT > 0.5 & QV < 0.5 ) | (QT < 0.5 & QV > 0.5 ); %identify trading inefficiencies in the Algorithm. 

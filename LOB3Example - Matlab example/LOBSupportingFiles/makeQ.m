@@ -1,4 +1,4 @@
-function Q = makeQ(Data,n,N)
+function [Q,P, PCond, G, v, H, C,phi] = makeQ(Data,n,N)
 % This function generates a transition matrix Q based on input data.
 %this is done by backtesting data to generate Q. Once Q is made it can be
 %used for future returns.

@@ -80,7 +80,7 @@ def get_states(Data, n, N):
     n  # Number of bins for discretization
 
     # Smoothed imbalance bins
-    sI = smoothed_time_weighted_average(Data['I'], dI)
+    sI =  smoothed_time_weighted_average(Data['I'], dI)
     binEdges = np.linspace(-1., 1., num=int(n))
     rho = np.digitize(sI, binEdges, right=False)   # Discretize smoothed imbalance ratio into bins
     rho = rho[:-dS]
@@ -99,15 +99,23 @@ def make_Q(Data, n, N):
     rho, DS = get_states(Data, n, N)
     
     # Map states to a composite state space 'phi'
-    phi = np.where(DS == -1, rho, np.where(DS == 0, rho + n, rho + 2 * n))
+    phi = np.empty_like(rho)
 
-    # Transition counts
+    for i in range(len(rho)):
+        if DS[i] == -1:
+            phi[i] = rho[i]
+        elif DS[i] == 0:
+            phi[i] = rho[i] + numBins
+        elif DS[i] == 1:
+            phi[i] = rho[i] + 2 * numBins
+    # Transition counts 
     C = np.zeros((numStates, numStates))
     for i in range(len(phi) - dS - 1):
         C[phi[i], phi[i + 1]] += 1
 
     # Holding times, generator matrix
     H = np.diag(C)
+    H = H.reshape(-1, 1) # Reshape H into a column vector
     G = C / H
     v = np.sum(G, axis=1)
     G = G + np.diag(-v)

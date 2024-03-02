@@ -1,4 +1,4 @@
-function [cash, CASH, ASSETS,POSITIONS] = tradeOnQ(Data, Q, n, N)
+function [cash, CASH, ASSETS,POSITIONS] = trade_on_Q_with_cash_limit (Data,Q,n,N,cash,prob_limit)
 % This function performs trading based on a given Q matrix and input Data.
 % It uses the Q matrix to make predictions and execute buy or sell actions accordingly.
 % Extract relevant data from the input structure 'Data'
@@ -10,7 +10,6 @@ MOAsk = Data.MOAsk; % Market order ask prices
 [rho, DS] = getStates(Data, n, N);
 
 % Initialize trading variables
-cash = 0;     % Total cash
 assets = 0;   % Number of assets (stocks) held
 
 % Active trading loop
@@ -20,7 +19,6 @@ T = length(t); % Total number of time points
 CASH = zeros(1, T);
 ASSETS = zeros(1, T);
 POSITIONS= zeros(1, T);
-
 % Loop through each time point for active trading
 for tt = 2:T-N
 
@@ -30,15 +28,24 @@ for tt = 2:T-N
     upColumn = rho(tt) + 2 * n;
 
     % If predicting a downward price move
-    if Q(row, downColumn) > 0.5
-        cash = cash + MOBid(tt); % Sell
-        assets = assets - 1;
+    if Q(row, downColumn) > 0.5+prob_limit
+        if assets >= 1
+           cash = cash + MOBid(tt); % Sell
+           assets = assets - 1;
+
+        elseif -(assets-1)*MOAsk(tt) < cash + (assets-1) *MOAsk(tt)
+           cash = cash + MOBid(tt); % Sell
+           assets = assets - 1;
+        end
 
     % If predicting an upward price move
-    elseif Q(row, upColumn) > 0.5
-        cash = cash - MOAsk(tt); % Buy
-        assets = assets + 1;
+    elseif Q(row, upColumn) > 0.5-prob_limit
+        if cash>=MOAsk(tt)
+            cash = cash - MOAsk(tt); % Buy
+            assets = assets + 1;
+        end
     end
+
     % Update CASH and ASSETS arrays at each time point
     CASH(tt) = cash;
     ASSETS(tt) = assets;
