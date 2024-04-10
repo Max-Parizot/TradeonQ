@@ -1,0 +1,1 @@
+This project is a passion project of mine. I used the sample data files from https://lobsterdata.com/info/DataSamples.php to back test the strategy. Then I connected the Algorithm to the Kraken API to paper trade Bitcoin.
