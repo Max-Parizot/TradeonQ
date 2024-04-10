@@ -1,3 +1,0 @@
-API_KEY="PKUC6RC9E3VWXBPJRSCC"
-SECRET_KEY="zE1TA6WbgRekb7hbSAEPpmwB0SgwLSrDRnOLtZxN"
-BASE_URL="https://paper-api.alpaca.markets"

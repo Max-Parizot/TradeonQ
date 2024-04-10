@@ -1,3 +1,4 @@
+#By Max Parizot
 import numpy as np
 from scipy.signal import convolve
 from scipy.linalg import expm

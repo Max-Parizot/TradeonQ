@@ -1,4 +1,5 @@
 # We will define the functions to create the trading matrix Q and to trade on Q. We will also define the optimization function to optimize the trading strategy.
+#By Max Parizot
 import numpy as np
 from scipy.signal import convolve
 from scipy.linalg import expm
